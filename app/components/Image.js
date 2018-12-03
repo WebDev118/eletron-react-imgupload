@@ -19,6 +19,7 @@ class Image extends Component {
       eventID: '',
       app_id:'',
       imgInfoSaveState: false,
+      pusherNoti: true,
       imgUploading: false,
       stopButton: false
     }
@@ -36,6 +37,7 @@ class Image extends Component {
     });
     
     ipcRenderer.on('pusher-notification', (event, arg) => {
+      console.log("sadfsdfd")
       let state = arg.state;
       let data = arg.data[0];
       if(state === "ok"){
@@ -227,7 +229,6 @@ class Image extends Component {
         else {
           
           let server_id = response1.server_id;
-          alert(data[i].app_id+","+server_id)
           if(response1.status === "ok"){
             let update_data = { "server_id": server_id, "remote_id": remote_id};
             ipcRenderer.send('serverid_update', update_data);
