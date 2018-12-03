@@ -5,6 +5,8 @@ import config from '../constants/config';
 import  style from './Home.css';
 import {ipcMain,ipcRenderer} from 'electron';
 import { CopyFileTransformer } from 'builder-util/out/fs';
+import util from 'util';
+import { exec, spawn } from 'child_process';
 import axios from 'axios';
 import fs from 'fs';
 
@@ -17,7 +19,6 @@ class Image extends Component {
       eventID: '',
       app_id:'',
       imgInfoSaveState: false,
-      pusherNoti: true,
       imgUploading: false,
       stopButton: false
     }
@@ -33,6 +34,40 @@ class Image extends Component {
     ipcRenderer.on('getThumbdata-reply', (event, arg) => {
       this.sendThumbdata(arg);
     });
+    
+    ipcRenderer.on('pusher-notification', (event, arg) => {
+      let state = arg.state;
+      let data = arg.data[0];
+      if(state === "ok"){
+        let message = "You have received message from server.\n A full-size image with the following data will be uploaded:(server_id="+data.server_id+" remote_id="+data.event_id+").";
+        let email = localStorage.getItem('email');
+        let password = localStorage.getItem('password');
+        let path = data.path;
+        let imgfilename = data.filename;
+        let full_path = path+"/"+imgfilename;
+        let remote_id = data.remote_id;
+        let event_id = data.event_id;
+        let app_id = data.app_id;
+        let server_id = data.server_id;
+        let msg = confirm(message);
+
+        if(msg){
+          this.setState({imgUploading: true});
+          let that = this;
+          let command = "curl --verbose "+config.SITEURL+"/remote_images/"+server_id+" --user "+email+":"+password+" -F remote_image[photo_full]=@"+full_path+" -F remote_image[remote_id]="+remote_id+" -F remote_image[event_id]="+event_id+" -F remote_image[app_id]="+app_id+" -F _method=PUT";
+          let child2 = exec(command, function(error, stdout, stderr){
+            let response = JSON.parse(stdout);
+            if(response.status === "ok"){
+              alert("Successfully uploaded!");
+              that.setState({imgUploading: false});
+            }
+          });
+        }
+      }
+      if(state === "no"){
+        alert("There is no data on Local DB.");
+      }
+   });
   }
 
   componentWillMount(){
@@ -43,44 +78,7 @@ class Image extends Component {
       ipcRenderer.on('uuid-reply', (event, arg) => {
         this.setState({app_id: arg});
       });
-    }
-    if(this.state.pusherNoti){
-      this.setState({pusherNoti: false})
-      ipcRenderer.once('pusher-notification', (event, arg) => {
-        let state = arg.state;
-        let data = arg.data[0];
-        if(state === "ok"){
-          let message = "You have received message from server.\n A full-size image with the following data will be uploaded:(server_id="+data.server_id+" remote_id="+data.event_id+").";
-
-          let email = localStorage.getItem('email');
-          let password = localStorage.getItem('password');
-          let path = data.path;
-          let imgfilename = data.filename;
-          let full_path = path+"/"+imgfilename;
-          let remote_id = data.remote_id;
-          let event_id = data.event_id;
-          let app_id = data.app_id;
-          let server_id = data.server_id;
-          let msg = confirm(message);
-
-          if(msg){
-            let util = require('util');
-            let exec = require('child_process').exec;
-            let command = "curl --verbose "+config.SITEURL+"/remote_images/"+server_id+" --user "+email+":"+password+" -F remote_image[photo_full]=@"+full_path+" -F remote_image[remote_id]="+remote_id+" -F remote_image[event_id]="+event_id+" -F remote_image[app_id]="+app_id+" -F _method=PUT";
-            
-            let child2 = exec(command, function(error, stdout, stderr){
-              let response = JSON.parse(stdout);
-              if(response.status === "ok"){
-                alert("Successfully uploaded!");
-              }
-            });
-          }
-        }
-        if(state === "no"){
-          alert("There is no data on Local DB.");
-        }
-     });
-    }
+    } 
   }
 
   onChageEventId = (event) => {
@@ -203,8 +201,6 @@ class Image extends Component {
 
   sendThumbdata = (data) =>{
     let that = this;
-    let util = require('util');
-    let exec = require('child_process').exec;
     this.setState({imgUploading: true});
     let email = localStorage.getItem('email');
     let password = localStorage.getItem('password');
@@ -222,13 +218,16 @@ class Image extends Component {
       let app_id = data[i].app_id;
 
       let command1 = "curl "+config.SITEURL+"/remote_images --user "+email+":"+password+" -F remote_image[photo_thumb]=@"+thumb_path+" -F remote_image[remote_id]="+remote_id+" -F remote_image[event_id]="+event_id+" -F remote_image[app_id]="+app_id;
+
       let child1 = exec(command1, function(error, stdout1, stderr){
         let response1 = JSON.parse(stdout1);
         if(stdout1 === "bad_pin"){
           alert("Bad Pin");
         }
         else {
+          
           let server_id = response1.server_id;
+          alert(data[i].app_id+","+server_id)
           if(response1.status === "ok"){
             let update_data = { "server_id": server_id, "remote_id": remote_id};
             ipcRenderer.send('serverid_update', update_data);
