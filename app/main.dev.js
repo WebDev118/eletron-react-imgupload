@@ -1,13 +1,16 @@
 import { app, BrowserWindow, Tray, Menu, ipcRenderer, dialog, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import path from 'path';
 import MenuBuilder from './menu';
 import { configureRequestOptions } from 'builder-util-runtime';
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('database/database.db');
+let dbFile = path.join(app.getPath( "userData"), 'database.db');
+const db = new sqlite3.Database(dbFile);
 
 db.run('CREATE TABLE IF NOT EXISTS appid (id INTEGER PRIMARY KEY AUTOINCREMENT, app_id text NOT NULL)');
 db.run('CREATE TABLE IF NOT EXISTS image (remote_id INTEGER PRIMARY KEY AUTOINCREMENT, filename text NOT NULL, app_id text NOT NULL, event_id text NOT NULL, server_id text, path text NOT NULL,  Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -68,7 +71,6 @@ app.on('ready', async () => {
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
-
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
   mainWindow.webContents.on('did-finish-load', () => {
@@ -128,6 +130,7 @@ app.on('ready', async () => {
     });
     event.sender.send('selectDirectory-reply', dir)
   });
+  
   ipcMain.on('uuid', (event, arg) => {
     db.all('SELECT * FROM appid', function(err, allRows) {
       if(err != null){
