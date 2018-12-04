@@ -5,7 +5,7 @@ import path from 'path';
 import MenuBuilder from './menu';
 import { configureRequestOptions } from 'builder-util-runtime';
 const sqlite3 = require('sqlite3').verbose();
-let dbFile = path.join(app.getPath( "userData"), 'database.db');
+let dbFile = path.join(app.getPath("userData"), 'database.db');
 const db = new sqlite3.Database(dbFile);
 
 db.run('CREATE TABLE IF NOT EXISTS appid (id INTEGER PRIMARY KEY AUTOINCREMENT, app_id text NOT NULL)');
