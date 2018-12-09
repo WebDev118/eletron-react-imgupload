@@ -51,6 +51,11 @@ $ yarn dev
 
 ![screen shot 2018-12-09 at 4 06 31 pm](https://user-images.githubusercontent.com/39380399/49694848-d463a380-fbcc-11e8-984f-446a6b8982e1.png)
 
+-If full size image is uploaded, is displayed following images.
+
+![screen shot 2018-12-09 at 4 15 34 pm](https://user-images.githubusercontent.com/39380399/49694937-b8accd00-fbcd-11e8-8beb-519c1499abe4.png)
+
+
 - If there is image with same name in local DB, display following message.
 
 ![screen shot 2018-12-03 at 10 20 48 am](https://user-images.githubusercontent.com/39380399/49349603-555efe80-f6e6-11e8-85a1-437a0a287fad.png)
