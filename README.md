@@ -7,7 +7,7 @@
 First, clone the repo via github:
 
 ```bash
-git clone https://github.com/whitetiger713/eletron-react-imgupload.git
+git clone https://github.com/reactDev713/eletron-react-imgupload.git
 ```
 
 And then install the dependencies with yarn.
