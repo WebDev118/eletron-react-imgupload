@@ -6,10 +6,6 @@
 
 First, clone the repo via github:
 
-```bash
-git clone https://github.com/ReactDev2019/eletron-react-imgupload.git
-```
-
 And then install the dependencies with yarn.
 
 ```bash
